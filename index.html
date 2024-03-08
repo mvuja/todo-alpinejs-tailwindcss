@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>To do list - Alpine.js and Tailwind.css</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+        <style>
+            [x-cloak] {
+                display: none !important;
+            }
+        </style>
+    </head>
+
+    <body class="bg-slate-100">
+        <div class="py-32 container mx-auto px-4" x-data>
+            <h1 class="text-center text-3xl font-bold">To do list</h1>
+
+            <form
+                @submit.prevent="
+        $store.todos.search.trim() === '' ? $store.todos.error = true : $store.todos.error = false;
+        $store.todos.search.trim() !== '' && $store.todos.addTodo({id: Math.floor(Math.random() * 1000000), title: $store.todos.search, completed: false});
+        $store.todos.search = ''"
+                class="flex justify-center mt-10 gap-3 max-w-screen-sm mx-auto"
+            >
+                <input
+                    x-model="$store.todos.search"
+                    type="text"
+                    class="border p-1 border-slate-300 rounded flex-1"
+                    placeholder="Add todos..."
+                />
+                <button
+                    class="py-2 px-4 bg-slate-700 hover:bg-slate-950 transition text-white rounded"
+                >
+                    Add todo
+                </button>
+            </form>
+
+            <template x-if="$store.todos.error">
+                <p class="text-center font-bold mt-2">Please enter a value</p>
+            </template>
+
+            <ul class="max-w-screen-sm mx-auto mt-10 space-y-3">
+                <template x-for="todo in $store.todos.todos">
+                    <li x-data="{editing: false, editingTxt: ''}">
+                        <template x-if="editing === true">
+                            <div class="flex gap-3">
+                                <input
+                                    type="text"
+                                    x-model="editingTxt"
+                                    class="border p-1 border-slate-300 rounded flex-1"
+                                />
+                                <button
+                                    class="bg-slate-700 hover:bg-slate-950 transition text-white px-3 py-1 rounded"
+                                    @click="todo.title = editingTxt; editing = false"
+                                >
+                                    Edit
+                                </button>
+                            </div>
+                        </template>
+                        <template x-if="editing === false">
+                            <div class="flex justify-between">
+                                <span
+                                    class="cursor-pointer"
+                                    :class="todo.completed && 'line-through opacity-50'"
+                                    @click="todo.completed = !todo.completed"
+                                    x-text="todo.title"
+                                ></span>
+                                <div class="space-x-1">
+                                    <button
+                                        class="bg-slate-700 hover:bg-slate-950 transition text-white px-2 py-2 rounded"
+                                        @click="editing = true; editingTxt = todo.title"
+                                    >
+                                        <img src="svg/edit.svg" alt="Edit todo" />
+                                    </button>
+                                    <button
+                                        class="bg-slate-700 hover:bg-slate-950 transition text-white px-2 py-2 rounded"
+                                        @click="$store.todos.deleteTodo(todo.id)"
+                                    >
+                                        <img src="svg/delete.svg" alt="Delete todo" />
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </li>
+                </template>
+            </ul>
+        </div>
+
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('todos', {
+                    todos: [
+                        { id: 1, completed: false, title: 'Buy milk' },
+                        { id: 2, completed: true, title: 'Walk the dog' },
+                        { id: 3, completed: false, title: 'Take out the trash' },
+                    ],
+
+                    error: false,
+                    search: '',
+                    editing: false,
+
+                    addTodo(todo) {
+                        this.todos.push(todo)
+                    },
+
+                    deleteTodo(index) {
+                        this.todos = this.todos.filter((el) => el.id !== index)
+                    },
+                })
+            })
+        </script>
+    </body>
+</html>
